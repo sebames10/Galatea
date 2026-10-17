@@ -1,0 +1,382 @@
+{
+  "bucket_path": "menu",
+  "fotos": [
+    {
+      "categoria": "Para picar",
+      "producto": "Fritas",
+      "archivo": "para-picar--fritas.webp",
+      "original": "Porción fritas.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Fritas salseadas",
+      "archivo": "para-picar--fritas-salseadas.webp",
+      "original": "Porción fritas salseadas con cheddar.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Bastones de muzzarella",
+      "archivo": "para-picar--bastones-de-muzzarella.webp",
+      "original": "Bstones de muzzarella.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Bastones de pollo",
+      "archivo": "para-picar--bastones-de-pollo.webp",
+      "original": "Bastones de pollo.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Aros de cebolla",
+      "archivo": "para-picar--aros-de-cebolla.webp",
+      "original": "Aros de cebolla.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Gramajo",
+      "archivo": "para-picar--gramajo.webp",
+      "original": "Gramajo para 1.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Pizzeta",
+      "archivo": "pizzetas--pizzeta.webp",
+      "original": "Pizzeta muzarella.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Caprese",
+      "archivo": "pizzetas--caprese.webp",
+      "original": "Pizzeta caprese.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Galatea",
+      "archivo": "pizzetas--galatea.webp",
+      "original": "Pizzeta galatea.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Quijote",
+      "archivo": "pizzetas--quijote.webp",
+      "original": "Pizzeta quijote.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Dulcinea",
+      "archivo": "pizzetas--dulcinea.webp",
+      "original": "Pizzeta dulcinea.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Faina",
+      "archivo": "pizzetas--faina.webp",
+      "original": "Porción faina.jpg"
+    },
+    {
+      "categoria": "Pizzetas",
+      "producto": "Faina con muzzarella",
+      "archivo": "pizzetas--faina-con-muzzarella.webp",
+      "original": "Faina con muzzarella.jpg"
+    },
+    {
+      "categoria": "Chivitos",
+      "producto": "Canadiense al plato",
+      "archivo": "chivitos--canadiense-al-plato.webp",
+      "original": "Chivito canadiense al plato.jpg"
+    },
+    {
+      "categoria": "Chivitos",
+      "producto": "Canadiense al pan",
+      "archivo": "chivitos--canadiense-al-pan.webp",
+      "original": "Chivito canadiense al pan.jpg"
+    },
+    {
+      "categoria": "Chivitos",
+      "producto": "Chivito común",
+      "archivo": "chivitos--chivito-comun.webp",
+      "original": "Chivito común al plato.jpg"
+    },
+    {
+      "categoria": "Hamburguesas",
+      "producto": "Hamb completa",
+      "archivo": "hamburguesas--hamb-completa.webp",
+      "original": "Hamburguesa completa.jpg"
+    },
+    {
+      "categoria": "Hamburguesas",
+      "producto": "Hamb común",
+      "archivo": "hamburguesas--hamb-comun.webp",
+      "original": "Hamburguesa común.jpg"
+    },
+    {
+      "categoria": "Hamburguesas",
+      "producto": "Hamb Galatea",
+      "archivo": "hamburguesas--hamb-galatea.webp",
+      "original": "Hamburguesa Galatea.jpg"
+    },
+    {
+      "categoria": "Milanesas",
+      "producto": "Al plato",
+      "archivo": "milanesas--al-plato.webp",
+      "original": "Milanesa común.jpg"
+    },
+    {
+      "categoria": "Milanesas",
+      "producto": "A caballo",
+      "archivo": "milanesas--a-caballo.webp",
+      "original": "Milanesa a caballo.jpg"
+    },
+    {
+      "categoria": "Milanesas",
+      "producto": "Caprese",
+      "archivo": "milanesas--caprese.webp",
+      "original": "Milanesa caprese.jpg"
+    },
+    {
+      "categoria": "Milanesas",
+      "producto": "Napolitana",
+      "archivo": "milanesas--napolitana.webp",
+      "original": "Milanesa napolitana.jpg"
+    },
+    {
+      "categoria": "Milanesas",
+      "producto": "Galatea",
+      "archivo": "milanesas--galatea.webp",
+      "original": "Milanesa Galatea.jpg"
+    },
+    {
+      "categoria": "Para compartir",
+      "producto": "Picada 1",
+      "archivo": "para-compartir--picada-1.webp",
+      "original": "Picada 1.jpg"
+    },
+    {
+      "categoria": "Para compartir",
+      "producto": "Picada 2",
+      "archivo": "para-compartir--picada-2.webp",
+      "original": "Picada 2.jpg"
+    },
+    {
+      "categoria": "Para compartir",
+      "producto": "Picada 3",
+      "archivo": "para-compartir--picada-3.webp",
+      "original": "Picada 3.jpg"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Fritas salseadas con champi",
+      "archivo": "para-picar--fritas-salseadas-con-champi.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Fritas salseadas con cheddar y bacon",
+      "archivo": "para-picar--fritas-salseadas-con-cheddar-y-bacon.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Gramajo para 2",
+      "archivo": "para-picar--gramajo-para-2.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Para picar",
+      "producto": "Gramajo vegetariano",
+      "archivo": "para-picar--gramajo-vegetariano.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Bocha de helado",
+      "archivo": "postres--bocha-de-helado.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Brownie",
+      "archivo": "postres--brownie.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Brownie con helado",
+      "archivo": "postres--brownie-con-helado.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Crumble con helado",
+      "archivo": "postres--crumble-con-helado.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Crumble de manzana",
+      "archivo": "postres--crumble-de-manzana.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Postres",
+      "producto": "Panqueque con dulce de leche",
+      "archivo": "postres--panqueque-con-dulce-de-leche.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Highball Blonde & Lemon",
+      "archivo": "tragos--highball-blonde-lemon.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Johnnie Walker Red & Cola",
+      "archivo": "tragos--johnnie-walker-red-cola.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Tanqueray & Tonic",
+      "archivo": "tragos--tanqueray-tonic.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Johnnie Walker® Black Label™",
+      "archivo": "tragos--johnnie-walker-black-label.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Johnnie Walker® Red Label™",
+      "archivo": "tragos--johnnie-walker-red-label.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Negroni",
+      "archivo": "tragos--negroni.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Smirnoff & Pomelo",
+      "archivo": "tragos--smirnoff-pomelo.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Mojito",
+      "archivo": "tragos--mojito.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Cuba libre",
+      "archivo": "tragos--cuba-libre.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Campari Tonic",
+      "archivo": "tragos--campari-tonic.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Tinto de verano",
+      "archivo": "tragos--tinto-de-verano.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Jäger Bomb",
+      "archivo": "tragos--jager-bomb.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Jäger Mojito",
+      "archivo": "tragos--jager-mojito.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Fernet con coca",
+      "archivo": "tragos--fernet-con-coca.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Aperol spritz",
+      "archivo": "tragos--aperol-spritz.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Campari Orange",
+      "archivo": "tragos--campari-orange.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Tragos",
+      "producto": "Trago sugerencia",
+      "archivo": "tragos--trago-sugerencia.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Heineken",
+      "archivo": "cervezas--heineken.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Tirada Rubia",
+      "archivo": "cervezas--tirada-rubia.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Tirada IPA",
+      "archivo": "cervezas--tirada-ipa.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Tirada Maracuyá",
+      "archivo": "cervezas--tirada-maracuya.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Estrella Galicia sin gluten",
+      "archivo": "cervezas--estrella-galicia-sin-gluten.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Cervezas",
+      "producto": "Estrella Galicia sin alcohol",
+      "archivo": "cervezas--estrella-galicia-sin-alcohol.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Vinos",
+      "producto": "Trapiche",
+      "archivo": "vinos--trapiche.webp",
+      "original": "Generada con FLUX"
+    },
+    {
+      "categoria": "Vinos",
+      "producto": "Familia Gascón",
+      "archivo": "vinos--familia-gascon.webp",
+      "original": "Generada con FLUX"
+    }
+  ],
+  "sin_producto": [
+    "Gramajo para 2.jpg",
+    "Porción fritas salseadas con champi.jpg",
+    "Porción fritas salseadas con cheddar y bacon.jpg"
+  ]
+}

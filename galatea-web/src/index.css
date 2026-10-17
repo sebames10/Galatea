@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   Tokens de marca (logo Galatea: azul marino profundo + dorado).
+   Se guardan como canales RGB para poder usar opacidad en Tailwind:
+   bg-gold/15, border-line/60, etc.
+------------------------------------------------------------------- */
+:root {
+  --bg: 6 22 43;          /* #06162B fondo del logo */
+  --surface: 12 32 58;    /* #0C203A tarjetas */
+  --elevated: 19 44 77;   /* #132C4D tarjetas destacadas, inputs */
+  --line: 38 66 104;      /* #264268 bordes */
+  --ink: 245 241 232;     /* #F5F1E8 texto principal (blanco cálido) */
+  --muted: 168 181 200;   /* #A8B5C8 texto secundario (contraste 8.9:1 sobre bg) */
+  --gold: 201 162 82;     /* #C9A252 dorado del logo (contraste 7.9:1 sobre bg) */
+  --gold-soft: 232 207 150;
+  --on-gold: 6 22 43;
+  --ok: 110 207 151;
+  --warn: 240 182 84;
+  --danger: 240 112 112;
+
+  /* Alturas de las barras: las usan el layout y las vistas para no tapar contenido */
+  --header-h: 3.5rem;
+  --bottom-nav-h: 4.25rem;
+
+  /* Alto del viewport "pequeño" (svh): la pantalla visible con la barra del
+     navegador desplegada. Es fijo, así que no cambia mientras la barra se
+     oculta o aparece al hacer scroll (dvh sí cambia y provoca saltos).
+     Fallback a vh dentro de la variable: si se escribiera 100svh directo y el
+     navegador no lo soporta, la variable quedaría inválida y no habría alto. */
+  --vh-small: 100vh;
+
+  /* Lo que queda visible entre el encabezado y la barra inferior en móvil */
+  --visible-h: calc(
+    var(--vh-small) - var(--header-h) - var(--bottom-nav-h) - env(safe-area-inset-top, 0px) -
+      env(safe-area-inset-bottom, 0px)
+  );
+
+  /* Movimiento: duraciones compartidas (entrada más lenta que salida) */
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+
+  color-scheme: dark;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --vh-small: 100svh;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Pantalla completa (https://web.dev/blog/viewport-units)
+
+   Móvil (< 768px): el scroll lo hace el DOCUMENTO, no un contenedor
+   interno. Es la condición para que Chrome y Safari oculten la barra de
+   direcciones al bajar y la app use toda la pantalla. El encabezado queda
+   pegado arriba (sticky) y la barra inferior fija abajo (fixed).
+   - svh (--vh-small) para medir lo que entra al cargar: el hero llena la
+     pantalla visible sin saltar cuando la barra del navegador se oculta.
+   - Las barras fijas (bottom: 0) siguen solas al borde real de la pantalla.
+
+   Tablet y escritorio (≥ 768px): no hay barra del navegador que ocultar,
+   así que se mantiene la app de alto fijo con scroll interno en <main> y
+   en el panel lateral. dvh con fallback a vh.
+------------------------------------------------------------------- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    /* Sin "pull to refresh" ni rebote del documento: se siente como app */
+    overscroll-behavior-y: none;
+  }
+
+  @media (min-width: 768px) {
+    html,
+    body,
+    #root {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+  }
+
+  body {
+    @apply bg-bg font-sans text-base leading-relaxed text-ink antialiased;
+    /* Evita que el doble toque haga zoom y retrase los taps, sin bloquear el pinch-zoom */
+    touch-action: manipulation;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-heading font-semibold tracking-wide;
+    text-wrap: balance;
+  }
+
+  /* Por defecto un fieldset mide al menos lo que su contenido (min-content) y rompe las filas con scroll horizontal */
+  fieldset {
+    min-width: 0;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold ring-offset-2 ring-offset-bg;
+  }
+
+  button,
+  a,
+  [role='button'] {
+    cursor: pointer;
+  }
+}
+
+/* En modo standalone (PWA instalada) no hay barra del navegador:
+   se respetan el notch y la barra de gestos con las safe areas. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  :root {
+    --bottom-nav-h: 4.5rem;
+  }
+}
+
+@layer components {
+  /* Contenedor con scroll interno (el contenido de cada vista) */
+  .app-scroll {
+    @apply min-h-0 overflow-y-auto overflow-x-hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line)) transparent;
+  }
+
+  /* Fila con scroll horizontal (chips, carruseles) sin barra visible */
+  .scroll-row {
+    @apply flex gap-3 overflow-x-auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-row > * {
+    scroll-snap-align: start;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .card {
+    @apply rounded-2xl border border-line/60 bg-surface;
+  }
+
+  /* Botones: mínimo 44px de alto (objetivo táctil) y feedback al presionar sin mover el layout */
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 font-heading text-sm font-semibold uppercase tracking-[0.08em] transition-[background-color,opacity,box-shadow] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary {
+    @apply btn bg-gold text-on-gold hover:bg-gold-soft active:opacity-80;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-transparent text-ink hover:bg-elevated active:opacity-80;
+  }
+
+  .chip {
+    @apply inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line px-4 text-sm font-medium text-muted transition-colors duration-150 hover:text-ink;
+  }
+  .chip[aria-pressed='true'],
+  .chip[aria-selected='true'] {
+    @apply border-gold bg-gold/15 text-gold;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+  .field {
+    @apply min-h-12 w-full rounded-xl border border-line bg-elevated px-4 text-base text-ink placeholder:text-muted/70 focus:border-gold;
+  }
+
+  .eyebrow {
+    @apply font-heading text-xs font-semibold uppercase tracking-[0.2em] text-gold;
+  }
+
+  /* Marco dorado con esquinas en chaflán, inspirado en el hexágono del logo */
+  .deco-frame {
+    position: relative;
+    clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  }
+
+  /* ----------------------------------------------------------------
+     Hero de Inicio: foto a pantalla completa con efecto Ken Burns.
+     En móvil ocupa exactamente la pantalla visible entre el encabezado
+     y la barra inferior (--visible-h, basado en svh). En tablet y
+     escritorio es una tarjeta de alto fijo.
+  ----------------------------------------------------------------- */
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    height: var(--visible-h);
+    min-height: 22rem; /* teléfonos en horizontal */
+  }
+  @media (min-width: 768px) {
+    .hero {
+      height: clamp(24rem, 60vh, 36rem);
+    }
+  }
+
+  .hero-media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 55%;
+    /* Ken Burns: zoom de 1.04 a 1.22 con un paneo suave hacia arriba a la
+       izquierda, en 12 s, ida y vuelta con ease-in-out para que nunca haya
+       un corte. Es más marcado que un zoom solo porque en un celular el
+       movimiento lateral es lo que más se percibe. Solo anima transform, que
+       lo resuelve la GPU sin recalcular el layout; will-change y
+       backface-visibility lo suben a su propia capa y evitan parpadeos. */
+    transform-origin: 50% 50%;
+    animation: ken-burns 12s ease-in-out infinite alternate;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  /* Degradés para que el botón y el encabezado se lean sobre la foto */
+  .hero-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgb(var(--bg)) 0%, rgb(var(--bg) / 0.6) 18%, transparent 45%),
+      linear-gradient(to bottom, rgb(var(--bg) / 0.5) 0%, transparent 14%);
+  }
+}
+
+@keyframes ken-burns {
+  /* Los desplazamientos nunca superan el margen que deja el zoom
+     (2 % por lado a 1.04, 11 % a 1.22), así no aparecen bordes vacíos. */
+  from {
+    transform: translate3d(1%, 1%, 0) scale(1.04);
+  }
+  to {
+    transform: translate3d(-3%, -2.5%, 0) scale(1.22);
+  }
+}
+
+/* Entrada suave de cada vista */
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.view-enter {
+  animation: view-in var(--dur-slow) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Con "reducir movimiento" la foto del hero queda quieta */
+  .hero-media img {
+    animation: none;
+  }
+}

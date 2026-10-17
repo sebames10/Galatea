@@ -1,0 +1,113 @@
+1. Introducción
+1.1. Presentación
+El presente documento describe el proyecto final de la carrera Analista en Sistemas, correspondiente al desarrollo de Galatea, una aplicación web orientada a la gestión gastronómica de un restaurante urbano real.
+Galatea surge como respuesta a necesidades concretas detectadas en la operativa diaria de un restaurante: la administración manual de reservas, la falta de visibilidad sobre la disponibilidad de mesas, la dificultad para mantener actualizado el menú y la ausencia de información sistematizada para la toma de decisiones. A partir de esta realidad, el proyecto propone una solución digital que permita centralizar la gestión operativa del restaurante y mejorar la experiencia de sus clientes.
+El sistema estará enfocado en un único restaurante, Galatea, y permitirá gestionar reservas, mesas, menú, carta de bebidas, usuarios internos, clientes, reportes operativos y una sección diferencial denominada Experiencia Galatea. Esta última incorpora una dinámica de juego social para los comensales, basada en partidas del juego del Impostor, rankings y premios canjeables dentro del restaurante.
+La propuesta combina funcionalidades tradicionales de gestión con elementos innovadores, como identidad progresiva de clientes, interacción en tiempo real, análisis de datos y asistencia mediante chatbot. El objetivo no es solamente informatizar procesos existentes, sino aportar valor al negocio mediante una herramienta que mejore la organización interna, reduzca errores operativos y fortalezca el vínculo con los clientes.
+Desde el punto de vista académico, el proyecto permite aplicar los conocimientos adquiridos durante la carrera en áreas como análisis de requerimientos, modelado conceptual, casos de uso, planificación, arquitectura, diseño, base de datos, desarrollo web y evaluación de riesgos. Además, incorpora tecnologías y conceptos que requieren investigación adicional, tales como WebSockets, Redis, Docker, inteligencia artificial aplicada, recomendaciones y predicción de demanda.
+2. Descripción de Negocio y Requerimientos
+2.1. Modelado de negocio e información sobre el cliente
+El cliente del proyecto es el restaurante Galatea, un restaurante urbano que actualmente gestiona parte de su operativa de forma manual o mediante herramientas no integradas. Entre sus procesos principales se encuentran la atención a clientes, la administración de reservas, la organización de mesas, la gestión del menú, la disponibilidad de platos y bebidas, y el seguimiento general de la actividad del local.
+En la situación actual, las reservas se realizan principalmente por teléfono o mediante comunicación directa con el restaurante. Esto puede generar problemas como reservas duplicadas, falta de control sobre la disponibilidad real de mesas, dificultad para reorganizar horarios y poca visibilidad sobre la ocupación esperada. Además, la información generada por la actividad diaria no queda centralizada, lo que dificulta obtener reportes útiles para la toma de decisiones.
+Otro aspecto relevante del negocio es la actualización del menú. En un restaurante, la disponibilidad de platos y bebidas puede variar durante el servicio. Si esta información no se actualiza de forma rápida y clara, pueden generarse errores de comunicación entre el personal y los clientes. Por este motivo, Galatea propone que roles internos como cocinero y bartender puedan gestionar directamente la disponibilidad de platos y tragos.
+El sistema también busca mejorar la experiencia del cliente. Para ello, incorpora una sección llamada Experiencia Galatea, donde los comensales pueden participar en partidas sociales desde sus dispositivos móviles. Esta funcionalidad apunta a generar una experiencia distinta dentro del restaurante, aumentar la permanencia, favorecer la recurrencia y asociar la marca Galatea con una propuesta gastronómica más interactiva.
+El proyecto se desarrollará para un único restaurante real, por lo que el alcance estará centrado en las necesidades particulares de Galatea y no en una plataforma genérica para múltiples restaurantes.
+2.2. Requerimientos funcionales (RF)
+Los requerimientos funcionales describen las acciones que el sistema debe permitir realizar.
+RF01 - Consultar menú
+El sistema deberá permitir que un cliente consulte los platos disponibles del restaurante.
+RF02 - Consultar carta de bebidas
+El sistema deberá permitir que un cliente consulte los tragos y bebidas disponibles.
+RF03 - Consultar disponibilidad de mesas
+El sistema deberá permitir consultar la disponibilidad de mesas según fecha, horario y cantidad de personas.
+RF04 - Realizar reserva
+El sistema deberá permitir que un cliente realice una reserva indicando fecha, horario, cantidad de personas y datos de contacto necesarios.
+RF05 - Cancelar reserva
+El sistema deberá permitir que un cliente cancele una reserva existente.
+RF06 - Gestionar reservas
+El sistema deberá permitir que el administrador consulte, confirme, modifique o cancele reservas.
+RF07 - Generar perfil progresivo de cliente
+El sistema deberá generar o actualizar un perfil de cliente cuando una persona realice una reserva o interactúe con funcionalidades relevantes del sistema.
+RF08 - Gestionar platos
+El sistema deberá permitir que el cocinero cree, modifique, elimine y marque disponibilidad de platos.
+RF09 - Gestionar bebidas
+El sistema deberá permitir que el bartender cree, modifique, elimine y marque disponibilidad de bebidas o tragos.
+RF10 - Iniciar sesión de usuario interno
+El sistema deberá permitir el inicio de sesión de usuarios internos, como administrador, cocinero y bartender.
+RF11 - Gestionar usuarios internos
+El sistema deberá permitir que el administrador gestione los usuarios internos del restaurante.
+RF12 - Visualizar dashboard operativo
+El sistema deberá permitir que el administrador visualice información resumida sobre reservas, ocupación, clientes y actividad general.
+RF13 - Consultar reportes de ocupación
+El sistema deberá generar reportes relacionados con la ocupación de mesas por fecha, horario o período.
+RF14 - Interactuar con chatbot
+El sistema deberá permitir que el cliente realice consultas mediante un chatbot sobre menú, disponibilidad y reservas.
+RF15 - Recibir recomendaciones
+El sistema deberá permitir generar recomendaciones de platos o bebidas en función del historial o comportamiento del cliente.
+RF16 - Crear sala de juego
+El sistema deberá permitir que un anfitrión de mesa cree una sala para iniciar una partida de Experiencia Galatea.
+RF17 - Configurar partida
+El sistema deberá permitir configurar una partida indicando modo, cantidad de rondas, categoría de palabras y jugadores participantes.
+RF18 - Unirse a partida
+El sistema deberá permitir que los jugadores se unan a una partida desde sus dispositivos móviles.
+RF19 - Asignar roles de juego
+El sistema deberá asignar automáticamente roles a los jugadores, diferenciando entre Civil e Impostor.
+RF20 - Gestionar rondas de juego
+El sistema deberá permitir iniciar rondas, controlar temporizadores, registrar pistas y avanzar el estado de la partida.
+RF21 - Registrar votos
+El sistema deberá permitir que los jugadores voten al participante que consideran Impostor.
+RF22 - Calcular resultado de partida
+El sistema deberá calcular el resultado de cada ronda o partida según las reglas definidas.
+RF23 - Actualizar ranking
+El sistema deberá actualizar el ranking de jugadores y mesas según los resultados obtenidos.
+RF24 - Gestionar premios
+El sistema deberá permitir que el administrador configure premios disponibles para los clientes.
+RF25 - Canjear premios
+El sistema deberá permitir que los clientes consulten y canjeen premios según sus puntos acumulados.
+2.3. Actores
+Cliente / Jugador
+Persona que utiliza el sistema desde su dispositivo móvil. Puede consultar el menú, consultar disponibilidad, realizar reservas, interactuar con el chatbot, recibir recomendaciones, participar en juegos, consultar ranking y canjear premios.
+Anfitrión de Mesa
+Cliente que asume el rol de organizador de una partida dentro de una mesa. Puede crear la sala, configurar la partida, agregar jugadores, iniciar rondas, gestionar el temporizador, registrar votos y finalizar la partida.
+Cocinero
+Usuario interno encargado de gestionar los platos del menú. Puede crear, modificar, eliminar y marcar disponibilidad de platos.
+Bartender
+Usuario interno encargado de gestionar la carta de bebidas y tragos. Puede crear, modificar, eliminar y marcar disponibilidad de bebidas.
+Administrador
+Usuario interno con acceso completo al sistema. Puede gestionar reservas, usuarios internos, reportes, dashboard, configuración del juego, premios, rankings y parámetros generales del sistema.
+Sistema
+Actor automático que ejecuta acciones internas sin intervención directa de una persona. Entre ellas se encuentran la generación de perfiles progresivos, asignación de roles en partidas, cálculo de resultados, actualización de rankings, envío de notificaciones y generación de recomendaciones.
+Chatbot / Servicio de IA
+Actor externo o componente asistente que permite responder consultas del cliente sobre menú, disponibilidad y reservas.
+2.4. Requerimientos no funcionales (RNF)
+Los requerimientos no funcionales describen cualidades, restricciones y condiciones que debe cumplir el sistema.
+RNF01 - Usabilidad
+El sistema deberá contar con una interfaz clara, simple y adaptable a dispositivos móviles, ya que los clientes lo utilizarán principalmente desde sus celulares.
+RNF02 - Diseño responsive
+La aplicación deberá adaptarse correctamente a distintos tamaños de pantalla, especialmente celulares, tablets y computadoras.
+RNF03 - Seguridad de acceso
+Los usuarios internos deberán autenticarse para acceder a sus funcionalidades correspondientes.
+RNF04 - Control de roles
+El sistema deberá restringir el acceso a funcionalidades según el rol del usuario: administrador, cocinero o bartender.
+RNF05 - Rendimiento
+Las consultas frecuentes, como disponibilidad de mesas, menú y estado de partidas, deberán responder en tiempos adecuados para no afectar la experiencia del usuario.
+RNF06 - Disponibilidad
+El sistema deberá estar disponible durante los horarios de operación del restaurante, especialmente en momentos de mayor actividad.
+RNF07 - Integridad de datos
+El sistema deberá evitar inconsistencias, como reservas duplicadas para una misma mesa, horarios superpuestos o canjes de premios sin puntos suficientes.
+RNF08 - Escalabilidad moderada
+Aunque el sistema se desarrollará para un único restaurante, deberá permitir manejar múltiples usuarios conectados simultáneamente, especialmente durante partidas o consultas de reservas.
+RNF09 - Mantenibilidad
+La solución deberá organizarse de forma modular para facilitar futuras modificaciones, corrección de errores e incorporación de nuevas funcionalidades.
+RNF10 - Trazabilidad de operaciones relevantes
+El sistema deberá registrar acciones importantes, como creación o modificación de reservas, cambios de disponibilidad, resultados de partidas y canjes de premios.
+RNF11 - Experiencia en tiempo real
+Las funcionalidades de juego, ranking y estado de partida deberán actualizarse en tiempo real o con mínima demora perceptible.
+RNF12 - Privacidad de datos
+El sistema deberá tratar los datos de clientes de forma responsable, evitando solicitar información innecesaria y protegiendo los datos asociados a reservas, historial y perfiles.
+RNF13 - Confiabilidad
+El sistema deberá manejar errores de forma controlada, informando al usuario cuando una operación no pueda completarse.
+RNF14 - Compatibilidad tecnológica
+La aplicación deberá funcionar correctamente en navegadores modernos utilizados desde dispositivos móviles y de escritorio.
+RNF15 - Soporte para evolución futura
+La arquitectura y documentación deberán permitir incorporar en futuras etapas funcionalidades como predicción de demanda, recomendaciones avanzadas o integración con servicios externos.
