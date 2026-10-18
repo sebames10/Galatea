@@ -5,6 +5,7 @@ import { formatoPrecio } from '../data/menu'
 import { useApp } from '../store'
 import { PageHeader } from '../components/PageHeader'
 import { OrderSummary } from '../components/OrderSummary'
+import { ComoFunciona } from '../components/ComoFunciona'
 
 const estados: { id: EstadoPedido; titulo: string; texto: string }[] = [
   { id: 'pendiente', titulo: 'Recibido', texto: 'Llegó a cocina y barra.' },
@@ -50,9 +51,9 @@ export function Pedido() {
 
   return (
     <div className="flex flex-col">
-      <PageHeader eyebrow={mesa ? `Mesa ${mesa.numero}` : 'Pedido por QR'} title="Pedido" />
+      <PageHeader eyebrow={mesa ? `Mesa ${mesa.numero}` : 'Tu mesa'} title="Pedido" />
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:items-start">
         {mios.length > 0 && <Seguimiento pedidos={mios} />}
 
         {!mesa ? (
@@ -62,7 +63,7 @@ export function Pedido() {
             </span>
             <h2 className="text-2xl">Escaneá el QR de tu mesa</h2>
             <p className="max-w-md text-muted">
-              Cada mesa tiene su código. Al escanearlo, la mesa queda identificada y podés pedir sin esperar a un mozo.
+              Lo encontrás en el centro de la mesa.
             </p>
             {errorMesa && (
               <p role="alert" className="text-sm text-danger">
@@ -82,6 +83,11 @@ export function Pedido() {
             {cuenta && <CuentaMesa codigo={mesa.codigo} cuenta={cuenta} onCambio={setCuenta} />}
           </div>
         )}
+
+        {/* En tablet y escritorio hay lugar para explicar el pedido por QR */}
+        <div className="hidden md:block">
+          <ComoFunciona />
+        </div>
       </div>
     </div>
   )

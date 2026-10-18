@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Producto } from '../api'
 import { formatoPrecio } from '../data/menu'
 import { useApp } from '../store'
@@ -9,15 +10,24 @@ const nombreVisible = (presentacion: string) => (presentacion === 'Estándar' ? 
 
 export function ProductCard({ producto, prioridad = false }: { producto: Producto; prioridad?: boolean }) {
   const { cantidad, agregar, quitar } = useApp()
-  const { nombre, descripcion, foto, agotado, etiquetas, presentaciones } = producto
+  const { id, nombre, descripcion, foto, agotado, etiquetas, presentaciones } = producto
   const unica = presentaciones.length === 1 ? presentaciones[0] : null
 
   return (
     <article className={`card flex h-full flex-col overflow-hidden ${agotado ? 'opacity-60' : ''}`}>
-      {foto && <Foto src={foto} prioridad={prioridad} />}
+      {/* La foto y el nombre abren el detalle del producto */}
+      {foto && (
+        <Link to={`/menu/${id}`} className="group block" tabIndex={-1} aria-hidden="true">
+          <Foto src={foto} prioridad={prioridad} />
+        </Link>
+      )}
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg leading-snug">{nombre}</h3>
+          <h3 className="text-lg leading-snug">
+            <Link to={`/menu/${id}`} className="transition-colors hover:text-gold-soft">
+              {nombre}
+            </Link>
+          </h3>
           {unica && <span className="shrink-0 font-heading font-semibold text-gold">{formatoPrecio(unica.precio)}</span>}
         </div>
         {descripcion && <p className="text-sm text-muted">{descripcion}</p>}

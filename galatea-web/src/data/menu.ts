@@ -24,3 +24,22 @@ export function destacados(carta: CategoriaMenu[]): (Producto & { categoria: str
 export function precioDesde(p: Producto) {
   return Math.min(...p.presentaciones.map((pr) => pr.precio))
 }
+
+export type ProductoConCategoria = Producto & { categoria: string; sector: CategoriaMenu['sector'] }
+
+export function buscarProducto(carta: CategoriaMenu[], id: number): ProductoConCategoria | undefined {
+  for (const c of carta) {
+    const p = c.productos.find((x) => x.id === id)
+    if (p) return { ...p, categoria: c.nombre, sector: c.sector }
+  }
+}
+
+/** "Combina bien con": a un plato le va un trago, a un postre un trago y a la barra algo para picar. */
+export function maridaje(carta: CategoriaMenu[], p: ProductoConCategoria): Producto[] {
+  const objetivo = p.sector === 'barra' ? ['Para picar', 'Para compartir'] : p.categoria === 'Postres' ? ['Tragos'] : ['Tragos', 'Cervezas']
+  return carta
+    .filter((c) => objetivo.includes(c.nombre))
+    .flatMap((c) => c.productos)
+    .filter((x) => x.id !== p.id && !x.agotado)
+    .slice(0, 6)
+}

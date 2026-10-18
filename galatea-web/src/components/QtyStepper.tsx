@@ -23,7 +23,7 @@ export function QtyStepper({ nombre, cantidad, onMas, onMenos, disabled }: Props
       <button type="button" onClick={onMenos} className="grid size-11 place-items-center text-gold active:opacity-70" aria-label={`Quitar un ${nombre}`}>
         <Minus size={18} aria-hidden="true" />
       </button>
-      <span className="min-w-6 text-center font-heading font-semibold text-ink" aria-live="polite">
+      <span className="min-w-6 text-center font-bold text-ink" aria-live="polite">
         {cantidad}
       </span>
       <button type="button" onClick={onMas} className="grid size-11 place-items-center text-gold active:opacity-70" aria-label={`Agregar otro ${nombre}`}>

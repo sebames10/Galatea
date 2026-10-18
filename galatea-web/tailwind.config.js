@@ -19,15 +19,22 @@ export default {
         danger: 'rgb(var(--danger) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['"Poiret One"', 'sans-serif'],
-        heading: ['"Josefin Sans"', 'sans-serif'],
-        sans: ['Karla', 'system-ui', 'sans-serif'],
+        // Tipografías de GalateaLovable: Fraunces (serif) para títulos y cifras, Manrope para el texto
+        display: ['Fraunces', 'Georgia', 'serif'],
+        heading: ['Fraunces', 'Georgia', 'serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        // Solo el logotipo en texto (Wordmark)
+        logo: ['"Poiret One"', 'sans-serif'],
       },
       screens: {
         // md: tablet / rail de navegación, lg: escritorio con 3 columnas, xl: escritorio ancho
         md: '768px',
         lg: '1024px',
         xl: '1440px',
+      },
+      boxShadow: {
+        soft: '0 18px 40px -18px rgb(0 0 0 / 0.6)',
+        glow: '0 10px 30px -8px rgb(var(--gold) / 0.45)',
       },
       transitionTimingFunction: {
         out: 'cubic-bezier(0.22, 1, 0.36, 1)',

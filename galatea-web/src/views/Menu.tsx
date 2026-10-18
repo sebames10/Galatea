@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { SearchX, X } from 'lucide-react'
 import type { Sector } from '../api'
 import { formatoPrecio } from '../data/menu'
+import { aplicaPromo, promoPorId } from '../data/promos'
 import { useApp } from '../store'
 import { PageHeader } from '../components/PageHeader'
 import { ProductCard } from '../components/ProductCard'
@@ -12,21 +14,33 @@ type Tipo = 'plato' | 'trago'
 const SECTOR: Record<Tipo, Sector> = { plato: 'cocina', trago: 'barra' }
 
 export function Menu() {
-  const [tipo, setTipo] = useState<Tipo>('plato')
+  // El tipo va en la URL (?tipo=trago) para que al volver del detalle de un trago se siga viendo la barra
+  const [params, setParams] = useSearchParams()
+  const tipo: Tipo = params.get('tipo') === 'trago' ? 'trago' : 'plato'
   const [categoria, setCategoria] = useState<string | null>(null)
   const { carta, cargandoCarta, errorCarta, recargarCarta, totalItems, total } = useApp()
 
-  const delTipo = carta.filter((c) => c.sector === SECTOR[tipo] && c.productos.length > 0)
+  // ?promo=id (desde Promociones): solo los productos donde se aplica el descuento
+  const promo = promoPorId(params.get('promo'))
+
+  const delTipo = carta
+    .filter((c) => c.sector === SECTOR[tipo])
+    .map((c) => (promo ? { ...c, productos: c.productos.filter((p) => aplicaPromo(promo, c.nombre, p)) } : c))
+    .filter((c) => c.productos.length > 0)
   const agrupados = delTipo.filter((c) => !categoria || c.nombre === categoria)
 
-  const cambiarTipo = (t: Tipo) => {
-    setTipo(t)
+  const irA = (t: Tipo, conPromo: typeof promo | null = promo) => {
+    const p = new URLSearchParams()
+    if (t === 'trago') p.set('tipo', t)
+    if (conPromo) p.set('promo', conPromo.id)
+    setParams(p, { replace: true })
     setCategoria(null)
   }
+  const cambiarTipo = (t: Tipo) => irA(t)
 
   return (
-    <div className="  flex flex-col gap-1">
-      <PageHeader eyebrow=""  title="Menú">
+    <div className="flex flex-col gap-1">
+      <PageHeader eyebrow="Carta" title="Menú" subtitle="Tocá un plato o un trago para ver más.">
         {/* Control segmentado platos / tragos */}
         <div role="tablist" aria-label="Tipo de producto" className="grid grid-cols-2 rounded-xl border border-line bg-surface p-1 md:w-72">
           {(['plato', 'trago'] as const).map((t) => (
@@ -36,7 +50,7 @@ export function Menu() {
               type="button"
               aria-selected={tipo === t}
               onClick={() => cambiarTipo(t)}
-              className={`min-h-11 rounded-lg font-heading text-sm font-semibold uppercase tracking-wider transition-colors duration-150 ${
+              className={`min-h-11 rounded-lg text-sm font-bold transition-colors duration-150 ${
                 tipo === t ? 'bg-gold text-on-gold' : 'text-muted hover:text-ink'
               }`}
             >
@@ -56,6 +70,37 @@ export function Menu() {
           </button>
         ))}
       </div>
+
+      {promo && (
+        <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm">
+          <span>
+            Mostrando productos de <b className="text-gold">{promo.titulo}</b>
+          </span>
+          <button
+            type="button"
+            aria-label="Quitar filtro de la promoción"
+            onClick={() => irA(tipo, null)}
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-elevated transition-colors hover:bg-line"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {promo && carta.length > 0 && delTipo.length === 0 && (
+        <div className="flex flex-col items-center rounded-3xl border border-dashed border-line bg-surface px-6 py-12 text-center">
+          <span className="mb-3 grid size-14 place-items-center rounded-full bg-elevated text-gold">
+            <SearchX size={24} aria-hidden="true" />
+          </span>
+          <h2 className="text-xl">Nada por acá</h2>
+          <p className="mt-1 max-w-sm text-sm text-muted">
+            Esta promoción no aplica a los {tipo === 'plato' ? 'platos' : 'tragos'}. Probá en la otra pestaña.
+          </p>
+          <button type="button" className="btn-ghost mt-4 min-h-10" onClick={() => irA(tipo === 'plato' ? 'trago' : 'plato')}>
+            Ver {tipo === 'plato' ? 'tragos' : 'platos'}
+          </button>
+        </div>
+      )}
 
       {errorCarta && <ErrorCarga mensaje={errorCarta} onReintentar={recargarCarta} />}
       {cargandoCarta && carta.length === 0 && (
@@ -83,11 +128,11 @@ export function Menu() {
         ))}
       </div>
 
-      {/* Acceso rápido al pedido en móvil/tablet (en escritorio está el panel lateral) */}
+      {/* Acceso rápido al pedido */}
       {totalItems > 0 && (
-        // En móvil queda justo arriba de la barra inferior fija; en tablet, al pie del <main>
-        <div className="sticky bottom-[calc(var(--bottom-nav-h)+env(safe-area-inset-bottom)+0.75rem)] mt-6 md:bottom-0 lg:hidden">
-          <Link to="/pedido" className="btn-primary w-full justify-between shadow-lg shadow-bg/80">
+        // En móvil queda justo arriba de la barra inferior flotante; en tablet y escritorio, al pie de la pantalla
+        <div className="sticky bottom-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+0.75rem)] mt-6 md:bottom-6 md:flex md:justify-end">
+          <Link to="/pedido" className="btn-primary w-full justify-between shadow-glow md:w-96">
             <span>Ver pedido · {totalItems}</span>
             <span>{formatoPrecio(total)}</span>
           </Link>

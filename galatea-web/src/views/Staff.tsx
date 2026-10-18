@@ -38,7 +38,7 @@ export function Staff() {
 
   if (sesion) {
     return (
-      <div className="grid min-h-[calc(var(--visible-h)-3rem)] place-items-center py-6 md:min-h-full">
+      <div className="grid min-h-[calc(var(--visible-h)-3rem)] place-items-center py-6 md:min-h-[70vh]">
         <section className="card flex w-full max-w-sm flex-col items-center gap-4 p-6 text-center md:p-8">
           <Wordmark className="text-2xl" />
           <p className="eyebrow">{sesion.cargo}</p>
@@ -55,7 +55,7 @@ export function Staff() {
 
   return (
     // Centrado en la pantalla visible (en móvil la página ya no tiene alto fijo)
-    <div className="grid min-h-[calc(var(--visible-h)-3rem)] place-items-center py-6 md:min-h-full">
+    <div className="grid min-h-[calc(var(--visible-h)-3rem)] place-items-center py-6 md:min-h-[70vh]">
       <form onSubmit={enviar} className="card flex w-full max-w-sm flex-col gap-5 p-6 md:p-8">
         <div className="flex flex-col items-center gap-3 text-center">
           <Wordmark className="text-2xl" />

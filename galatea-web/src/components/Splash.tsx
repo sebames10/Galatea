@@ -33,7 +33,8 @@ export function Splash({ onDone }: { onDone: () => void }) {
     <div
       role="dialog"
       aria-label="Bienvenida a Galatea"
-      className={`fixed inset-0 z-50 grid touch-none place-items-center bg-bg transition-opacity ease-out ${
+      // Fondo exacto del logo (no el de la app) para que el video no muestre un recuadro
+      className={`fixed inset-0 z-50 grid touch-none place-items-center bg-[var(--logo-bg)] transition-opacity ease-out ${
         saliendo ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
       style={{ transitionDuration: `${SALIDA_MS}ms` }}

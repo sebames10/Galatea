@@ -1,25 +1,41 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { CalendarCheck, Clock, Minus, Plus, Users } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, CalendarCheck, Clock, Minus, Plus } from 'lucide-react'
 import { reservas, type Disponibilidad } from '../api'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorCarga } from '../components/ErrorCarga'
 import { duracionEstimada, fechaIso, sumarMinutos } from '../data/reservas'
+import { desdeIso, eventoDelDia } from '../data/eventos'
 import { telefonoValido, useCliente } from '../useCliente'
 
+// Personas va antes que Horario: la API calcula los horarios libres según la cantidad de personas
+const PASOS = ['Fecha', 'Personas', 'Horario', 'Datos', 'Listo'] as const
+const [FECHA, PERSONAS, HORARIO, DATOS, LISTO] = [0, 1, 2, 3, 4]
+
+// La API acepta reservas hasta 60 días adelante
+const DIAS_VISIBLES = 45
+const MAX_PERSONAS = 20
+
 const fmtDia = new Intl.DateTimeFormat('es-UY', { weekday: 'short' })
+const fmtMes = new Intl.DateTimeFormat('es-UY', { month: 'short' })
 const fmtFecha = new Intl.DateTimeFormat('es-UY', { weekday: 'long', day: 'numeric', month: 'long' })
 
 function proximosDias(n: number) {
   const hoy = new Date()
-  return Array.from({ length: n }, (_, i) => new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i))
+  return Array.from({ length: n }, (_, i) => fechaIso(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i)))
 }
 
 export function Reservar() {
-  const dias = useMemo(() => proximosDias(10), [])
-  const [dia, setDia] = useState(0)
+  const dias = useMemo(() => proximosDias(DIAS_VISIBLES), [])
+  // ?fecha=AAAA-MM-DD llega desde el detalle de un evento: arranca con ese día elegido
+  const [params] = useSearchParams()
+  const fechaInicial = dias.includes(params.get('fecha') ?? '') ? params.get('fecha')! : ''
+
+  const [paso, setPaso] = useState(fechaInicial ? PERSONAS : FECHA)
+  const [fecha, setFecha] = useState(fechaInicial)
   const [personas, setPersonas] = useState(2)
   const [hora, setHora] = useState<string | null>(null)
-  const [confirmada, setConfirmada] = useState(false)
   const [disponibilidad, setDisponibilidad] = useState<Disponibilidad | null>(null)
   const [errorDisp, setErrorDisp] = useState<string | null>(null)
   const [consulta, setConsulta] = useState(0)
@@ -29,17 +45,20 @@ export function Reservar() {
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fecha = dias[dia]
+  const evento = fecha ? eventoDelDia(fecha) : undefined
   const duracion = duracionEstimada(personas)
-  // La API exige nombre y teléfono para reservar: si falta, se piden en el resumen
+  // La API exige nombre y teléfono para reservar: si este dispositivo no está registrado, se piden
   const faltaRegistro = !cliente?.registrado
+  const datosOk = !faltaRegistro || (nombre.trim().length > 1 && telefonoValido(telefono))
+  const puedeSeguir = [!!fecha, personas > 0, !!hora, datosOk][paso] ?? false
 
   useEffect(() => {
+    if (!fecha) return
     let vigente = true
     setDisponibilidad(null)
     setErrorDisp(null)
     reservas
-      .disponibilidad(fechaIso(fecha), personas)
+      .disponibilidad(fecha, personas)
       .then((d) => vigente && setDisponibilidad(d))
       .catch((e: Error) => vigente && setErrorDisp(e.message))
     return () => {
@@ -47,206 +66,286 @@ export function Reservar() {
     }
   }, [fecha, personas, consulta])
 
-  // Si el horario elegido dejó de estar libre (cambió la cantidad de personas), se deselecciona
+  // Si el horario elegido dejó de estar libre (cambió el día o las personas), se deselecciona
   useEffect(() => {
     if (hora && disponibilidad && !disponibilidad.horarios.find((h) => h.hora === hora)?.disponible) setHora(null)
   }, [disponibilidad, hora])
 
-  const enviar = async (e: FormEvent) => {
-    e.preventDefault()
+  const confirmar = async () => {
     if (!hora) return
-    if (faltaRegistro && (!nombre.trim() || !telefonoValido(telefono))) {
-      setError('Necesitamos tu nombre y un celular válido (ej. 099 123 456) para guardar la reserva.')
-      return
-    }
     setEnviando(true)
     setError(null)
     try {
       if (faltaRegistro) await registrar(nombre.trim(), telefono)
-      await reservas.crear(fechaIso(fecha), hora, personas)
-      setConfirmada(true)
     } catch (err) {
+      setError((err as Error).message) // datos rechazados: se queda en este paso para corregirlos
+      setEnviando(false)
+      return
+    }
+    try {
+      await reservas.crear(fecha, hora, personas)
+      setPaso(LISTO)
+    } catch (err) {
+      // Lo más probable es que alguien haya tomado el horario: se vuelve a elegir con la lista actualizada
       setError((err as Error).message)
-      setConsulta((n) => n + 1) // alguien pudo haber tomado el horario: se refresca
+      setConsulta((n) => n + 1)
+      setPaso(HORARIO)
     } finally {
       setEnviando(false)
     }
   }
 
-  if (confirmada && hora) {
-    return (
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-10 text-center">
-        <span className="grid size-16 place-items-center rounded-full bg-ok/15 text-ok">
-          <CalendarCheck size={30} aria-hidden="true" />
-        </span>
-        <h1 className="text-3xl">¡Reserva confirmada!</h1>
-        <p className="text-muted">
-          {fmtFecha.format(fecha)} a las {hora} para {personas} {personas === 1 ? 'persona' : 'personas'}.
-        </p>
-        <p className="text-sm text-muted">
-          Si no llegás entre 15 minutos antes y 10 minutos después de la hora, la reserva se libera.
-        </p>
-        <button
-          type="button"
-          className="btn-ghost mt-2"
-          onClick={() => {
-            setConfirmada(false)
-            setHora(null)
-            setConsulta((n) => n + 1)
-          }}
-        >
-          Hacer otra reserva
-        </button>
-      </div>
-    )
+  const avanzar = (e: FormEvent) => {
+    e.preventDefault()
+    if (!puedeSeguir || enviando) return
+    if (paso === DATOS) void confirmar()
+    else setPaso(paso + 1)
   }
 
+  const otraReserva = () => {
+    setPaso(FECHA)
+    setFecha('')
+    setHora(null)
+    setError(null)
+    setConsulta((n) => n + 1)
+  }
+
+  const fechaLarga = fecha ? fmtFecha.format(desdeIso(fecha)) : ''
+  const resumen = fecha && (
+    <span>
+      {fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1)}
+      {paso > PERSONAS && ` · ${personas} ${personas === 1 ? 'persona' : 'personas'}`}
+      {hora && paso > HORARIO && ` · ${hora} h`}
+    </span>
+  )
+
   return (
-    <form onSubmit={enviar} className="flex flex-col">
-      <PageHeader eyebrow="Sin usuario ni contraseña" title="Reservar mesa" />
+    <form onSubmit={avanzar} className="flex flex-col">
+      <PageHeader eyebrow="Sin usuario ni contraseña" title="Reservar" subtitle="Cinco pasos y tu mesa queda lista." />
 
-      {/* Escritorio: elección a la izquierda y resumen fijo a la derecha */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="flex flex-col gap-8">
-          <fieldset>
-            <legend className="field-label">Día</legend>
-            <div className="scroll-row -mx-4 px-4 md:mx-0 md:grid md:grid-cols-5 md:px-0 xl:grid-cols-10">
-              {dias.map((d, i) => (
+      <ol className="mb-6 grid grid-cols-5 gap-1.5" aria-label="Progreso de la reserva">
+        {PASOS.map((nombrePaso, i) => (
+          <li key={nombrePaso}>
+            <button
+              type="button"
+              disabled={i >= paso || paso === LISTO}
+              onClick={() => setPaso(i)}
+              aria-current={i === paso ? 'step' : undefined}
+              className="w-full text-left disabled:cursor-default"
+            >
+              <span className={`block h-1.5 rounded-full transition-colors ${i <= paso ? 'bg-gold' : 'bg-elevated'}`} />
+              <span className={`mt-1.5 block text-[11px] font-semibold ${i === paso ? 'text-ink' : 'text-muted'}`}>{nombrePaso}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={paso}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-3xl border border-line/60 bg-surface p-5 md:p-8"
+        >
+          {paso === FECHA && (
+            <fieldset>
+              <legend className="mb-4 font-heading text-2xl font-semibold">¿Qué día venís?</legend>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                {dias.map((d, i) => {
+                  const dt = desdeIso(d)
+                  const ev = eventoDelDia(d)
+                  const elegido = fecha === d
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      aria-pressed={elegido}
+                      aria-label={`${fmtFecha.format(dt)}${ev ? `, ${ev.titulo}` : ''}`}
+                      onClick={() => {
+                        setFecha(d)
+                        setHora(null)
+                      }}
+                      className={`relative rounded-2xl border py-2.5 text-center transition-colors ${
+                        elegido ? 'border-gold bg-gold text-on-gold' : 'border-line/60 bg-elevated/40 hover:bg-elevated'
+                      }`}
+                    >
+                      <span className="block text-[11px] uppercase opacity-70">{i === 0 ? 'Hoy' : fmtDia.format(dt).replace('.', '')}</span>
+                      <span className="block font-heading text-xl font-semibold">{dt.getDate()}</span>
+                      <span className="block text-[10px] uppercase opacity-70">{fmtMes.format(dt).replace('.', '')}</span>
+                      {ev && <span className={`absolute right-1.5 top-1.5 size-1.5 rounded-full ${elegido ? 'bg-on-gold' : 'bg-gold'}`} />}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-3 flex items-center gap-2 text-xs text-muted">
+                <span className="size-1.5 rounded-full bg-gold" aria-hidden="true" /> Día con evento.{' '}
+                <Link to="/eventos" className="font-semibold text-gold underline-offset-4 hover:underline">
+                  Ver la agenda
+                </Link>
+              </p>
+            </fieldset>
+          )}
+
+          {paso === PERSONAS && (
+            <fieldset>
+              <legend className="font-heading text-2xl font-semibold">¿Cuántas personas?</legend>
+              <p className="mb-6 mt-1 text-sm text-muted">
+                {resumen}
+                {evento && <span className="text-gold"> · {evento.titulo} ({evento.hora} h)</span>}
+              </p>
+              <div className="flex items-center justify-center gap-6">
                 <button
-                  key={d.toISOString()}
                   type="button"
-                  aria-pressed={dia === i}
-                  onClick={() => {
-                    setDia(i)
-                    setHora(null)
-                  }}
-                  className={`flex min-h-[4.5rem] w-16 shrink-0 flex-col items-center justify-center rounded-xl border transition-colors duration-150 md:w-auto ${
-                    dia === i ? 'border-gold bg-gold/15 text-gold' : 'border-line text-muted hover:text-ink'
-                  }`}
+                  aria-label="Una persona menos"
+                  disabled={personas <= 1}
+                  onClick={() => setPersonas((p) => Math.max(1, p - 1))}
+                  className="grid size-12 place-items-center rounded-full bg-elevated transition-colors hover:bg-line disabled:opacity-40"
                 >
-                  <span className="text-xs uppercase">{i === 0 ? 'Hoy' : fmtDia.format(d).replace('.', '')}</span>
-                  <span className="font-heading text-xl font-semibold">{d.getDate()}</span>
+                  <Minus size={20} aria-hidden="true" />
                 </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend className="field-label">Personas</legend>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="btn-ghost size-12 p-0"
-                onClick={() => setPersonas((p) => Math.max(1, p - 1))}
-                disabled={personas <= 1}
-                aria-label="Una persona menos"
-              >
-                <Minus size={18} aria-hidden="true" />
-              </button>
-              <output className="flex min-w-24 items-center justify-center gap-2 font-heading text-2xl font-semibold" aria-live="polite">
-                <Users size={20} className="text-gold" aria-hidden="true" />
-                {personas}
-              </output>
-              <button
-                type="button"
-                className="btn-ghost size-12 p-0"
-                onClick={() => setPersonas((p) => Math.min(20, p + 1))}
-                disabled={personas >= 20}
-                aria-label="Una persona más"
-              >
-                <Plus size={18} aria-hidden="true" />
-              </button>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend className="field-label">Horario</legend>
-            {errorDisp && <ErrorCarga mensaje={errorDisp} onReintentar={() => setConsulta((n) => n + 1)} />}
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6" aria-busy={!disponibilidad}>
-              {disponibilidad?.horarios.map(({ hora: h, disponible: libre }) => {
-                return (
-                  <button
-                    key={h}
-                    type="button"
-                    disabled={!libre}
-                    aria-pressed={hora === h}
-                    onClick={() => setHora(h)}
-                    className={`min-h-12 rounded-xl border font-heading font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:border-line/40 disabled:text-muted/40 disabled:line-through ${
-                      hora === h ? 'border-gold bg-gold text-on-gold' : 'border-line text-ink hover:border-gold/60'
-                    }`}
-                  >
-                    {h}
-                  </button>
-                )
-              })}
-            </div>
-            {!disponibilidad && !errorDisp && (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-                {Array.from({ length: 12 }, (_, i) => (
-                  <div key={i} className="min-h-12 animate-pulse rounded-xl bg-elevated/60" />
-                ))}
+                <output className="w-20 text-center font-display text-6xl" aria-live="polite">
+                  {personas}
+                </output>
+                <button
+                  type="button"
+                  aria-label="Una persona más"
+                  disabled={personas >= MAX_PERSONAS}
+                  onClick={() => setPersonas((p) => Math.min(MAX_PERSONAS, p + 1))}
+                  className="grid size-12 place-items-center rounded-full bg-elevated transition-colors hover:bg-line disabled:opacity-40"
+                >
+                  <Plus size={20} aria-hidden="true" />
+                </button>
               </div>
-            )}
-            <p className="mt-2 text-xs text-muted">Los horarios tachados ya no tienen mesas libres o ya pasaron.</p>
-          </fieldset>
-        </div>
+              <p className="mt-6 flex items-center justify-center gap-2 text-center text-sm text-muted">
+                <Clock size={14} aria-hidden="true" />
+                Duración estimada de {duracion} minutos.
+              </p>
+            </fieldset>
+          )}
 
-        <aside className="card sticky top-0 flex flex-col gap-4 p-5" aria-label="Resumen de la reserva">
-          <h2 className="text-lg">Resumen</h2>
-          <dl className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Día</dt>
-              <dd className="text-right first-letter:uppercase">{fmtFecha.format(fecha)}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Personas</dt>
-              <dd>{personas}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Horario</dt>
-              <dd>{hora ? `${hora} – ${sumarMinutos(hora, duracion)}` : 'Elegí un horario'}</dd>
-            </div>
-          </dl>
-          <p className="flex items-start gap-2 text-xs text-muted">
-            <Clock size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-            Duración estimada de {duracion} minutos para {personas} {personas === 1 ? 'persona' : 'personas'}.
-          </p>
-          {faltaRegistro && (
-            <div className="flex flex-col gap-3 border-t border-line/60 pt-4">
-              <p className="text-xs text-muted">Para guardarte la mesa necesitamos tu nombre y celular. Además te llevás el 10% de bienvenida.</p>
-              <div>
-                <label htmlFor="res-nombre" className="field-label">
-                  Nombre
-                </label>
-                <input id="res-nombre" className="field" value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" />
+          {paso === HORARIO && (
+            <fieldset>
+              <legend className="font-heading text-2xl font-semibold">¿A qué hora?</legend>
+              <p className="mb-4 mt-1 text-sm text-muted">
+                {resumen}
+                {evento && <span className="text-gold"> · {evento.titulo} ({evento.hora} h)</span>}
+              </p>
+              {errorDisp && <ErrorCarga mensaje={errorDisp} onReintentar={() => setConsulta((n) => n + 1)} />}
+              {error && (
+                <p role="alert" className="mb-3 rounded-2xl bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {error}
+                </p>
+              )}
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6" aria-busy={!disponibilidad}>
+                {disponibilidad
+                  ? disponibilidad.horarios.map(({ hora: h, disponible }) => (
+                      <button
+                        key={h}
+                        type="button"
+                        disabled={!disponible}
+                        aria-pressed={hora === h}
+                        onClick={() => {
+                          setHora(h)
+                          setError(null)
+                        }}
+                        className={`min-h-12 rounded-2xl border font-bold transition-colors disabled:cursor-not-allowed disabled:line-through disabled:opacity-35 ${
+                          hora === h ? 'border-gold bg-gold text-on-gold' : 'border-line/60 bg-elevated/40 hover:bg-elevated'
+                        }`}
+                      >
+                        {h}
+                      </button>
+                    ))
+                  : !errorDisp && Array.from({ length: 12 }, (_, i) => <div key={i} className="min-h-12 animate-pulse rounded-2xl bg-elevated/60" />)}
               </div>
-              <div>
-                <label htmlFor="res-telefono" className="field-label">
-                  Celular
-                </label>
-                <input
-                  id="res-telefono"
-                  className="field"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel-national"
-                  placeholder="099 123 456"
-                />
+              <p className="mt-3 text-xs text-muted">
+                {hora
+                  ? `Tu mesa queda reservada de ${hora} a ${sumarMinutos(hora, duracion)}.`
+                  : 'Los horarios tachados ya no tienen mesas libres o ya pasaron.'}
+              </p>
+            </fieldset>
+          )}
+
+          {paso === DATOS && (
+            <fieldset>
+              <legend className="font-heading text-2xl font-semibold">{faltaRegistro ? 'Tus datos' : 'Confirmá tu reserva'}</legend>
+              <p className="mb-5 mt-1 text-sm text-muted">{resumen}</p>
+              {faltaRegistro ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <p className="text-sm text-muted md:col-span-2">Solo para guardarte la mesa. Además te llevás el cupón de 10% de bienvenida.</p>
+                  <div>
+                    <label htmlFor="res-nombre" className="field-label">
+                      Nombre
+                    </label>
+                    <input id="res-nombre" className="field" value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" />
+                  </div>
+                  <div>
+                    <label htmlFor="res-telefono" className="field-label">
+                      Celular
+                    </label>
+                    <input
+                      id="res-telefono"
+                      className="field"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel-national"
+                      placeholder="099 123 456"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold-soft">
+                  Reservás como <strong className="font-semibold text-gold">{cliente?.nombre}</strong>.
+                </p>
+              )}
+              <p className="mt-4 text-xs text-muted">Si no llegás entre 15 minutos antes y 10 minutos después de la hora, la reserva se libera.</p>
+              {error && (
+                <p role="alert" className="mt-3 text-sm text-danger">
+                  {error}
+                </p>
+              )}
+            </fieldset>
+          )}
+
+          {paso === LISTO && hora && (
+            <div className="py-4 text-center" role="status">
+              <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} className="mx-auto grid size-16 place-items-center rounded-full bg-ok/15 text-ok">
+                <CalendarCheck size={32} aria-hidden="true" />
+              </motion.div>
+              <h2 className="mt-4 text-3xl">¡Te esperamos{cliente?.nombre ? `, ${cliente.nombre.split(' ')[0]}` : ''}!</h2>
+              <p className="mt-2 text-muted first-letter:uppercase">
+                {fmtFecha.format(desdeIso(fecha))} · {hora} h · {personas} {personas === 1 ? 'persona' : 'personas'}
+              </p>
+              <p className="mt-1 text-sm text-muted">Si no llegás entre 15 minutos antes y 10 minutos después, la mesa se libera.</p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link to="/menu" className="btn-ghost">
+                  Mirar el menú
+                </Link>
+                <button type="button" className="btn-primary" onClick={otraReserva}>
+                  Hacer otra reserva
+                </button>
               </div>
             </div>
           )}
-          <button type="submit" className="btn-primary w-full" disabled={!hora || enviando}>
-            {enviando ? 'Reservando…' : 'Confirmar reserva'}
+        </motion.div>
+      </AnimatePresence>
+
+      {paso < LISTO && (
+        <div className="mt-5 flex gap-3">
+          {paso > FECHA && (
+            <button type="button" className="btn-ghost" onClick={() => setPaso(paso - 1)}>
+              <ArrowLeft size={16} aria-hidden="true" />
+              Atrás
+            </button>
+          )}
+          <button type="submit" className="btn-primary flex-1" disabled={!puedeSeguir || enviando}>
+            {paso === DATOS ? (enviando ? 'Reservando…' : 'Confirmar reserva') : 'Continuar'}
           </button>
-          {error && (
-            <p role="alert" className="text-sm text-danger">
-              {error}
-            </p>
-          )}
-        </aside>
-      </div>
+        </div>
+      )}
     </form>
   )
 }

@@ -4,26 +4,31 @@
 
 /* ------------------------------------------------------------------
    Tokens de marca (logo Galatea: azul marino profundo + dorado).
+   El azul de la app es un poco más oscuro que el fondo del logo (#06162B)
+   para que las superficies y la barra flotante se despeguen mejor.
    Se guardan como canales RGB para poder usar opacidad en Tailwind:
    bg-gold/15, border-line/60, etc.
 ------------------------------------------------------------------- */
 :root {
-  --bg: 6 22 43;          /* #06162B fondo del logo */
-  --surface: 12 32 58;    /* #0C203A tarjetas */
-  --elevated: 19 44 77;   /* #132C4D tarjetas destacadas, inputs */
-  --line: 38 66 104;      /* #264268 bordes */
+  --bg: 4 15 31;          /* #040F1F fondo */
+  --surface: 9 25 46;     /* #09192E tarjetas */
+  --elevated: 15 36 64;   /* #0F2440 tarjetas destacadas, inputs */
+  --line: 31 55 89;       /* #1F3759 bordes */
   --ink: 245 241 232;     /* #F5F1E8 texto principal (blanco cálido) */
-  --muted: 168 181 200;   /* #A8B5C8 texto secundario (contraste 8.9:1 sobre bg) */
-  --gold: 201 162 82;     /* #C9A252 dorado del logo (contraste 7.9:1 sobre bg) */
+  --muted: 168 181 200;   /* #A8B5C8 texto secundario (contraste 9.6:1 sobre bg) */
+  --gold: 201 162 82;     /* #C9A252 dorado del logo (contraste 8.5:1 sobre bg) */
   --gold-soft: 232 207 150;
-  --on-gold: 6 22 43;
+  --on-gold: 4 15 31;
+  --logo-bg: #06162b;     /* fondo exacto del logo animado (Splash) */
   --ok: 110 207 151;
   --warn: 240 182 84;
   --danger: 240 112 112;
 
   /* Alturas de las barras: las usan el layout y las vistas para no tapar contenido */
   --header-h: 3.5rem;
-  --bottom-nav-h: 4.25rem;
+  --bottom-nav-h: 4rem;
+  /* La barra inferior flota a 0.75rem del borde: lo que ocupa en total */
+  --bottom-nav-space: calc(var(--bottom-nav-h) + 0.75rem);
 
   /* Alto del viewport "pequeño" (svh): la pantalla visible con la barra del
      navegador desplegada. Es fijo, así que no cambia mientras la barra se
@@ -34,7 +39,7 @@
 
   /* Lo que queda visible entre el encabezado y la barra inferior en móvil */
   --visible-h: calc(
-    var(--vh-small) - var(--header-h) - var(--bottom-nav-h) - env(safe-area-inset-top, 0px) -
+    var(--vh-small) - var(--header-h) - var(--bottom-nav-space) - env(safe-area-inset-top, 0px) -
       env(safe-area-inset-bottom, 0px)
   );
 
@@ -63,9 +68,8 @@
      pantalla visible sin saltar cuando la barra del navegador se oculta.
    - Las barras fijas (bottom: 0) siguen solas al borde real de la pantalla.
 
-   Tablet y escritorio (≥ 768px): no hay barra del navegador que ocultar,
-   así que se mantiene la app de alto fijo con scroll interno en <main> y
-   en el panel lateral. dvh con fallback a vh.
+   Tablet y escritorio (≥ 768px): también scrollea el documento, con la
+   barra superior sticky.
 ------------------------------------------------------------------- */
 @layer base {
   html {
@@ -76,18 +80,11 @@
     overscroll-behavior-y: none;
   }
 
-  @media (min-width: 768px) {
-    html,
-    body,
-    #root {
-      height: 100vh;
-      height: 100dvh;
-      overflow: hidden;
-    }
-  }
-
   body {
     @apply bg-bg font-sans text-base leading-relaxed text-ink antialiased;
+    /* Trama de puntos muy sutil sobre el fondo */
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.035) 1px, transparent 0);
+    background-size: 22px 22px;
     /* Evita que el doble toque haga zoom y retrase los taps, sin bloquear el pinch-zoom */
     touch-action: manipulation;
   }
@@ -95,7 +92,8 @@
   h1,
   h2,
   h3 {
-    @apply font-heading font-semibold tracking-wide;
+    @apply font-heading font-semibold;
+    letter-spacing: -0.01em;
     text-wrap: balance;
   }
 
@@ -119,12 +117,12 @@
    se respetan el notch y la barra de gestos con las safe areas. */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   :root {
-    --bottom-nav-h: 4.5rem;
+    --bottom-nav-h: 4.25rem;
   }
 }
 
 @layer components {
-  /* Contenedor con scroll interno (el contenido de cada vista) */
+  /* Contenedor con scroll interno */
   .app-scroll {
     @apply min-h-0 overflow-y-auto overflow-x-hidden;
     overscroll-behavior: contain;
@@ -162,12 +160,12 @@
     @apply rounded-2xl border border-line/60 bg-surface;
   }
 
-  /* Botones: mínimo 44px de alto (objetivo táctil) y feedback al presionar sin mover el layout */
+  /* Botones: mínimo 44px de alto (objetivo táctil); al presionar se encogen apenas (transform, no mueve el layout) */
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 font-heading text-sm font-semibold uppercase tracking-[0.08em] transition-[background-color,opacity,box-shadow] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-[background-color,opacity,box-shadow,transform] duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40;
   }
   .btn-primary {
-    @apply btn bg-gold text-on-gold hover:bg-gold-soft active:opacity-80;
+    @apply btn bg-gold text-on-gold shadow-glow hover:bg-gold-soft;
   }
   .btn-ghost {
     @apply btn border border-line bg-transparent text-ink hover:bg-elevated active:opacity-80;
@@ -188,8 +186,13 @@
     @apply min-h-12 w-full rounded-xl border border-line bg-elevated px-4 text-base text-ink placeholder:text-muted/70 focus:border-gold;
   }
 
+  /* Degradé desde el fondo para que el texto se lea sobre una foto */
+  .fade-bottom {
+    background-image: linear-gradient(to top, rgb(var(--bg)) 5%, rgb(var(--bg) / 0.6) 45%, transparent);
+  }
+
   .eyebrow {
-    @apply font-heading text-xs font-semibold uppercase tracking-[0.2em] text-gold;
+    @apply text-[0.7rem] font-bold uppercase tracking-[0.18em] text-gold;
   }
 
   /* Marco dorado con esquinas en chaflán, inspirado en el hexágono del logo */

@@ -5,6 +5,8 @@ interface Props {
   /** Las primeras fotos visibles: se bajan ya y con prioridad alta (sin carga diferida). */
   prioridad?: boolean
   className?: string
+  /** Vacío en las tarjetas (el nombre ya está al lado); en el detalle, el nombre del producto. */
+  alt?: string
 }
 
 /**
@@ -15,7 +17,7 @@ interface Props {
  * - crossOrigin="anonymous": la pide en modo CORS (Supabase lo permite) para que el
  *   service worker pueda guardarla para la próxima visita.
  */
-export function Foto({ src, prioridad = false, className = '' }: Props) {
+export function Foto({ src, prioridad = false, className = '', alt = '' }: Props) {
   const ref = useRef<HTMLImageElement>(null)
   const [cargada, setCargada] = useState(false)
 
@@ -29,7 +31,7 @@ export function Foto({ src, prioridad = false, className = '' }: Props) {
       <img
         ref={ref}
         src={src}
-        alt=""
+        alt={alt}
         width={720}
         height={540}
         crossOrigin="anonymous"
@@ -37,7 +39,7 @@ export function Foto({ src, prioridad = false, className = '' }: Props) {
         decoding="async"
         {...{ fetchpriority: prioridad ? 'high' : 'auto' }}
         onLoad={() => setCargada(true)}
-        className={`size-full object-cover transition-opacity duration-300 motion-reduce:transition-none ${cargada ? 'opacity-100' : 'opacity-0'}`}
+        className={`size-full object-cover transition-[opacity,transform] duration-300 group-hover:scale-105 motion-reduce:transition-none ${cargada ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>
   )

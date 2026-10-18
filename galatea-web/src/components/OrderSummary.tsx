@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QrCode, ShoppingBag } from 'lucide-react'
 import { formatoPrecio } from '../data/menu'
@@ -6,13 +6,14 @@ import { useApp } from '../store'
 import { QtyStepper } from './QtyStepper'
 
 /**
- * Resumen del pedido. Se usa en la vista Pedido (móvil/tablet) y en el panel
- * lateral de escritorio (compact). Antes de confirmar muestra el número de mesa
+ * Resumen del pedido. Se usa en la vista Pedido y en el panel que abre el botón
+ * de la bolsa (enPanel: el título lo pone el panel). Antes de confirmar muestra el número de mesa
  * para que el Cliente lo verifique (mitigación del riesgo "pedido en mesa incorrecta").
  */
-export function OrderSummary({ compact = false }: { compact?: boolean }) {
+export function OrderSummary({ compact = false, enPanel = false }: { compact?: boolean; enPanel?: boolean }) {
   const { mesa, carrito, total, totalItems, agregar, quitar, confirmarPedido } = useApp()
   const navigate = useNavigate()
+  const tituloId = useId() // puede haber dos a la vez: la vista Pedido y el panel
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,9 +31,9 @@ export function OrderSummary({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <section aria-labelledby="titulo-pedido" className="flex flex-col gap-4">
+    <section aria-labelledby={tituloId} className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 id="titulo-pedido" className="text-xl">
+        <h2 id={tituloId} className={enPanel ? 'sr-only' : 'text-xl'}>
           Tu pedido
         </h2>
         {totalItems > 0 && <span className="text-sm text-muted">{totalItems} ítems</span>}
@@ -78,7 +79,7 @@ export function OrderSummary({ compact = false }: { compact?: boolean }) {
               <p className="flex items-center gap-2 rounded-xl bg-gold/10 px-4 py-3 text-sm text-gold-soft">
                 <QrCode size={18} className="shrink-0" aria-hidden="true" />
                 <span>
-                  Se enviará a la <strong className="font-semibold text-gold">mesa {mesa.numero}</strong>. ¿Es correcta?
+                  Se enviará a la <strong className="font-semibold text-gold">mesa {mesa.numero}</strong>.
                 </span>
               </p>
               <button type="button" className="btn-primary w-full" onClick={confirmar} disabled={enviando}>
