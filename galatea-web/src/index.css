@@ -263,6 +263,15 @@
   }
 }
 
+@keyframes ken-burns-suave {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1.24);
+  }
+}
+
 /* Entrada suave de cada vista */
 @keyframes view-in {
   from {
@@ -288,8 +297,12 @@
     scroll-behavior: auto !important;
   }
 
-  /* Con "reducir movimiento" la foto del hero queda quieta */
+  /* Con "reducir movimiento" el hero no se queda quieto: muchos celulares lo
+     activan solos (ahorro de batería en Android, "quitar animaciones") y el
+     usuario no lo sabe. Se deja un zoom suave, más lento y sin paneo lateral
+     (lo que puede marear es el desplazamiento, no un acercamiento leve).
+     !important para ganarle a la regla global de arriba. */
   .hero-media img {
-    animation: none;
+    animation: ken-burns-suave 20s ease-in-out infinite alternate !important;
   }
 }

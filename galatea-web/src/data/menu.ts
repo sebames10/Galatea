@@ -43,3 +43,8 @@ export function maridaje(carta: CategoriaMenu[], p: ProductoConCategoria): Produ
     .filter((x) => x.id !== p.id && !x.agotado)
     .slice(0, 6)
 }
+
+// Nombres internos de presentación → lo que ve el cliente. "Estándar" es el único precio: no se muestra.
+const NOMBRES_PRESENTACION: Record<string, string | null> = { Estándar: null, p1: 'Para uno', p2: 'Para compartir' }
+
+export const nombrePresentacion = (nombre: string) => (nombre in NOMBRES_PRESENTACION ? NOMBRES_PRESENTACION[nombre] : nombre)

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Producto } from '../api'
-import { formatoPrecio } from '../data/menu'
+import { formatoPrecio, nombrePresentacion } from '../data/menu'
 import { useApp } from '../store'
 import { Foto } from './Foto'
 import { QtyStepper } from './QtyStepper'
@@ -9,7 +9,7 @@ import { QtyStepper } from './QtyStepper'
 export function ProductoMini({ producto }: { producto: Producto }) {
   const { cantidad, agregar, quitar } = useApp()
   const pr = producto.presentaciones.find((p) => p.disponible) ?? producto.presentaciones[0]
-  const variante = pr && pr.nombre !== 'Estándar' ? pr.nombre : null
+  const variante = pr ? nombrePresentacion(pr.nombre) : null
   const nombre = variante ? `${producto.nombre} ${variante}` : producto.nombre
 
   return (

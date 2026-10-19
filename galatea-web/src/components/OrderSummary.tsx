@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QrCode, ShoppingBag } from 'lucide-react'
-import { formatoPrecio } from '../data/menu'
+import { formatoPrecio, nombrePresentacion } from '../data/menu'
 import { useApp } from '../store'
 import { QtyStepper } from './QtyStepper'
 
@@ -51,7 +51,8 @@ export function OrderSummary({ compact = false, enPanel = false }: { compact?: b
         <>
           <ul className="flex flex-col divide-y divide-line/60 rounded-2xl border border-line/60 bg-surface">
             {carrito.map(({ producto, presentacion, cantidad }) => {
-              const nombre = presentacion.nombre === 'Estándar' ? producto.nombre : `${producto.nombre} · ${presentacion.nombre}`
+              const variante = nombrePresentacion(presentacion.nombre)
+              const nombre = variante ? `${producto.nombre} · ${variante}` : producto.nombre
               return (
                 <li key={presentacion.id} className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">

@@ -11,7 +11,7 @@ const HERO_SIZES = '(min-width: 1024px) 50vw, (min-width: 768px) 80vw, 100vw'
 
 const accesos = [
   { to: '/pedido', icon: QrCode, titulo: 'Pedir desde la mesa', texto: 'Escaneá el QR y pedí sin esperar.' },
-  { to: '/bienvenida', icon: Gift, titulo: '10% de bienvenida', texto: 'Dejá tu nombre y teléfono.' },
+  { to: '/bienvenida', icon: Gift, titulo: '10% de bienvenida', texto: '' },
 ]
 
 export function Inicio() {

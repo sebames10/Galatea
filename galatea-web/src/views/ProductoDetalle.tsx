@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Check, Sparkles } from 'lucide-react'
-import { buscarProducto, formatoPrecio, maridaje } from '../data/menu'
+import { buscarProducto, formatoPrecio, maridaje, nombrePresentacion } from '../data/menu'
 import { useApp } from '../store'
 import { PageHeader } from '../components/PageHeader'
 import { Foto } from '../components/Foto'
@@ -38,7 +38,6 @@ export function ProductoDetalle() {
   }
 
   const esTrago = p.sector === 'barra'
-  const variante = (n: string) => (n === 'Estándar' ? null : n)
   const pedibles = !p.agotado && !!pr?.disponible
   const enPedido = pr ? cantidad(pr.id) : 0
 
@@ -92,7 +91,7 @@ export function ProductoDetalle() {
                       pr?.id === x.id ? 'border-gold bg-gold/10' : 'border-line bg-surface hover:border-gold/60'
                     }`}
                   >
-                    <span className="block font-semibold">{variante(x.nombre) ?? p.nombre}</span>
+                    <span className="block font-semibold">{nombrePresentacion(x.nombre) ?? p.nombre}</span>
                     <span className="text-sm text-gold">{x.disponible ? formatoPrecio(x.precio) : 'Agotado por hoy'}</span>
                   </button>
                 ))}
