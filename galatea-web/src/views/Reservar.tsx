@@ -121,7 +121,7 @@ export function Reservar() {
 
   return (
     <form onSubmit={avanzar} className="flex flex-col">
-      <PageHeader eyebrow="Sin usuario ni contraseña" title="Reservar" subtitle="Cinco pasos y tu mesa queda lista." />
+      <PageHeader eyebrow="" title="Reservar" subtitle="Cinco pasos y tu mesa queda lista." />
 
       <ol className="mb-6 grid grid-cols-5 gap-1.5" aria-label="Progreso de la reserva">
         {PASOS.map((nombrePaso, i) => (

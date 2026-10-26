@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Check, QrCode, Receipt } from 'lucide-react'
 import { salon, type Cuenta, type EstadoPedido, type Pedido as PedidoApi } from '../api'
-import { formatoPrecio } from '../data/menu'
+import { formatoPrecio, nombrePresentacion } from '../data/menu'
 import { useApp } from '../store'
 import { PageHeader } from '../components/PageHeader'
 import { OrderSummary } from '../components/OrderSummary'
 import { ComoFunciona } from '../components/ComoFunciona'
+import { BotonEscanearMesa } from '../components/EscanerMesa'
 
 const estados: { id: EstadoPedido; titulo: string; texto: string }[] = [
   { id: 'pendiente', titulo: 'Recibido', texto: 'Llegó a cocina y barra.' },
@@ -63,8 +64,9 @@ export function Pedido() {
             </span>
             <h2 className="text-2xl">Escaneá el QR de tu mesa</h2>
             <p className="max-w-md text-muted">
-              Lo encontrás en el centro de la mesa.
+              Lo encontrás en el centro de la mesa. Podés escanearlo con la cámara del celular o desde acá.
             </p>
+            <BotonEscanearMesa />
             {errorMesa && (
               <p role="alert" className="text-sm text-danger">
                 {errorMesa}
@@ -147,8 +149,44 @@ function Seguimiento({ pedidos }: { pedidos: PedidoApi[] }) {
   )
 }
 
-/** Total de la mesa y pedido de la cuenta. */
+interface LineaConsumo {
+  clave: string
+  producto: string
+  /** Para uno, Para compartir, Copa…; null si el producto tiene un solo precio */
+  variante: string | null
+  cantidad: number
+}
+
+/**
+ * Lo pedido en toda la cuenta (de cualquier dispositivo de la mesa o del mozo), agrupado:
+ * el mismo producto y presentación en varios pedidos se muestra una sola vez con la cantidad sumada.
+ * Platos son los de cocina y Tragos los de barra.
+ */
+function consumoPorSector(pedidos: PedidoApi[]) {
+  const sectores = [
+    { sector: 'cocina', titulo: 'Platos', lineas: new Map<string, LineaConsumo>() },
+    { sector: 'barra', titulo: 'Tragos', lineas: new Map<string, LineaConsumo>() },
+  ]
+  for (const p of pedidos) {
+    const lineas = sectores.find((s) => s.sector === p.sector)!.lineas
+    for (const it of p.items) {
+      const clave = `${it.producto}|${it.presentacion}`
+      const linea = lineas.get(clave) ?? {
+        clave,
+        producto: it.producto,
+        variante: nombrePresentacion(it.presentacion),
+        cantidad: 0,
+      }
+      linea.cantidad += it.cantidad
+      lineas.set(clave, linea)
+    }
+  }
+  return sectores.filter((s) => s.lineas.size).map((s) => ({ ...s, lineas: [...s.lineas.values()] }))
+}
+
+/** Lo consumido por la mesa, el total y el pedido de la cuenta. */
 function CuentaMesa({ codigo, cuenta, onCambio }: { codigo: string; cuenta: Cuenta; onCambio: (c: Cuenta) => void }) {
+  const consumo = consumoPorSector(cuenta.pedidos)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -170,9 +208,26 @@ function CuentaMesa({ codigo, cuenta, onCambio }: { codigo: string; cuenta: Cuen
         <Receipt size={20} className="text-gold" aria-hidden="true" />
         Cuenta de la mesa
       </h2>
-      <div className="flex items-baseline justify-between">
-        <span className="text-muted">Consumido hasta ahora</span>
-        <span className="font-heading text-2xl font-semibold">{formatoPrecio(cuenta.total)}</span>
+      <p className="text-sm text-muted">Consumido hasta ahora</p>
+      {consumo.map(({ sector, titulo, lineas }) => (
+        <div key={sector} className="flex flex-col gap-2">
+          <h3 className="eyebrow">{titulo}</h3>
+          <ul className="flex flex-col gap-2">
+            {lineas.map((l) => (
+              <li key={l.clave} className="flex items-baseline gap-3">
+                <span className="w-7 shrink-0 font-semibold text-gold">{l.cantidad}×</span>
+                <span className="flex flex-1 flex-col">
+                  <span>{l.producto}</span>
+                  {l.variante && <span className="text-sm text-muted">{l.variante}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <div className="flex items-baseline justify-between border-t border-line/60 pt-3">
+        <span className="text-muted">Total</span>
+        <span className="font-heading ">{formatoPrecio(cuenta.total)}</span>
       </div>
       {cuenta.fechaSolicitudCuenta ? (
         <p role="status" className="rounded-xl bg-gold/10 px-4 py-3 text-sm text-gold-soft">

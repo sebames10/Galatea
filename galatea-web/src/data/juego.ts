@@ -2,7 +2,7 @@
 export const modos = [
   {
     id: 'mesa',
-    nombre: 'Modo Mesa',
+    nombre: '',
     descripcion: 'Todos en la misma mesa. Las pistas se dicen en voz alta.',
     reglas: [
       'Cada jugador ve una palabra secreta.',

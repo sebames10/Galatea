@@ -5,6 +5,8 @@ export interface LineaPedido {
   producto: Producto
   presentacion: Presentacion
   cantidad: number
+  /** Nota para la cocina o la barra (ej. "sin cebolla"); va como observación del detalle */
+  nota: string
 }
 
 /** Mesa identificada por el QR (?mesa=GAL-M07-B3X7). */
@@ -22,12 +24,14 @@ interface AppState {
   /** null si el Cliente no está en el local */
   mesa: MesaQr | null
   errorMesa: string | null
-  elegirMesa: (codigo: string) => Promise<void>
+  /** Valida el código con la API; devuelve false y deja el motivo en errorMesa si no es una mesa. */
+  elegirMesa: (codigo: string) => Promise<boolean>
 
   carrito: LineaPedido[]
   cantidad: (idPresentacion: number) => number
   agregar: (idPresentacion: number) => void
   quitar: (idPresentacion: number) => void
+  anotar: (idPresentacion: number, nota: string) => void
   vaciar: () => void
   totalItems: number
   total: number
@@ -60,6 +64,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [mesa, setMesa] = useState<MesaQr | null>(() => leer(MESA_KEY, null))
   const [errorMesa, setErrorMesa] = useState<string | null>(null)
   const [cantidades, setCantidades] = useState<Record<number, number>>({})
+  const [notas, setNotas] = useState<Record<number, string>>({})
   const [pedidosEnviados, setPedidosEnviados] = useState<number[]>(() => leer(PEDIDOS_KEY, []))
 
   const recargarCarta = useCallback(() => {
@@ -86,8 +91,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const nueva = { codigo, numero: m.numero }
       sessionStorage.setItem(MESA_KEY, JSON.stringify(nueva))
       setMesa(nueva)
+      return true
     } catch (e) {
       setErrorMesa((e as Error).message)
+      return false
     }
   }, [])
 
@@ -112,9 +119,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!mesa) throw new Error('Escaneá el QR de tu mesa para pedir.')
     const items = Object.entries(cantidades)
       .filter(([, c]) => c > 0)
-      .map(([id, cantidad]) => ({ idPresentacion: Number(id), cantidad }))
+      .map(([id, cantidad]) => ({ idPresentacion: Number(id), cantidad, observacion: notas[Number(id)]?.trim() || undefined }))
     const r = await salon.pedir(mesa.codigo, items)
     setCantidades({})
+    setNotas({})
     setPedidosEnviados((ant) => {
       const ids = [...ant, ...r.pedidos.map((p) => p.id)]
       sessionStorage.setItem(PEDIDOS_KEY, JSON.stringify(ids))
@@ -122,7 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
     // El stock pudo cambiar ("Agotado por hoy"): se refresca la carta en segundo plano
     recargarCarta()
-  }, [mesa, cantidades, recargarCarta])
+  }, [mesa, cantidades, notas, recargarCarta])
 
   const olvidarPedidos = useCallback(() => {
     sessionStorage.removeItem(PEDIDOS_KEY)
@@ -132,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppState>(() => {
     const carrito = Object.entries(cantidades)
       .filter(([id, c]) => c > 0 && presentaciones.has(Number(id)))
-      .map(([id, cantidad]) => ({ ...presentaciones.get(Number(id))!, cantidad }))
+      .map(([id, cantidad]) => ({ ...presentaciones.get(Number(id))!, cantidad, nota: notas[Number(id)] ?? '' }))
     return {
       carta,
       cargandoCarta,
@@ -145,14 +153,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cantidad: (id) => cantidades[id] ?? 0,
       agregar: (id) => setCantidades((c) => ({ ...c, [id]: Math.min(20, (c[id] ?? 0) + 1) })),
       quitar: (id) => setCantidades((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) - 1) })),
-      vaciar: () => setCantidades({}),
+      anotar: (id, nota) => setNotas((n) => ({ ...n, [id]: nota })),
+      vaciar: () => {
+        setCantidades({})
+        setNotas({})
+      },
       totalItems: carrito.reduce((s, l) => s + l.cantidad, 0),
       total: carrito.reduce((s, l) => s + l.cantidad * l.presentacion.precio, 0),
       confirmarPedido,
       pedidosEnviados,
       olvidarPedidos,
     }
-  }, [carta, cargandoCarta, errorCarta, recargarCarta, mesa, errorMesa, elegirMesa, cantidades, presentaciones, confirmarPedido, pedidosEnviados, olvidarPedidos])
+  }, [carta, cargandoCarta, errorCarta, recargarCarta, mesa, errorMesa, elegirMesa, cantidades, notas, presentaciones, confirmarPedido, pedidosEnviados, olvidarPedidos])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

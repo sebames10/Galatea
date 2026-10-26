@@ -33,6 +33,8 @@ npm run fotos:subir       # sube las 62 fotos del menú a Supabase y guarda las 
 Las 35 fotos generadas con FLUX ya están en `assets/menu`. Para regenerarlas hace falta `BFL_API_KEY` en el `.env` y `npm run fotos:generar` (solo genera las que faltan; `-- --forzar` las rehace todas, cada imagen gasta créditos de BFL).
 `db:reset` borra y recrea **solo** el schema `galatea` (configurable con `DB_SCHEMA`), nunca toca `public`. Es seguro correrlo sobre el Postgres de Supabase.
 
+**QR de las mesas:** `npm run qr:mesas` deja en `qr-mesas/` un SVG por mesa y `imprimir.html` (hoja A4 para imprimir). Cada QR apunta a `<WEB_URL>/?mesa=<codigoQR>`; sin `WEB_URL` usa la IP de la PC en el wifi y el puerto 5173, para probar con el celular. Para producción: `npm run qr:mesas -- https://<dominio>`.
+
 ### 4. Levantar la API
 ```bash
 npm run dev               # http://localhost:3000/api (se recarga sola al guardar)

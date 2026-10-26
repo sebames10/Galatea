@@ -187,7 +187,7 @@ export const salon = {
   mesaPorQr: (codigo: string) => pedir<Mesa>(qr(codigo)),
   cuenta: (codigo: string) => pedir<Cuenta | null>(`${qr(codigo)}/cuenta`, { acceso: 'cliente' }),
   solicitarCuenta: (codigo: string) => pedir<Cuenta>(`${qr(codigo)}/solicitar-cuenta`, { metodo: 'POST', acceso: 'cliente' }),
-  pedir: (codigoQR: string, items: { idPresentacion: number; cantidad: number }[]) =>
+  pedir: (codigoQR: string, items: { idPresentacion: number; cantidad: number; observacion?: string }[]) =>
     pedir<{ idCuenta: number; pedidos: Pedido[]; total: number }>('/pedidos/qr', {
       metodo: 'POST',
       cuerpo: { codigoQR, items },

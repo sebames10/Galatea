@@ -36,7 +36,7 @@ export function CuponBienvenida() {
   return (
     <section aria-labelledby="cupon-titulo" className="relative overflow-hidden rounded-3xl bg-gold p-6 text-on-gold shadow-glow md:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] opacity-80">Descuento de bienvenida</p>
-      <h2 id="cupon-titulo" className="mt-2 font-display text-6xl font-semibold">
+      <h2 id="cupon-titulo" className="mt-2 font-display text-6xl font-normal tracking-normal">
         10% off
       </h2>
 
@@ -62,7 +62,7 @@ export function CuponBienvenida() {
         </div>
       ) : (
         <>
-          <p className="mt-2 max-w-md font-medium">Dejanos tu nombre y celular y te damos un cupón de un solo uso. Sin usuario ni contraseña.</p>
+          <p className="mt-2 max-w-md font-medium">Dejanos tu nombre y celular y te damos un cupón de un solo uso por WhatsApp. </p>
           <form onSubmit={enviar} noValidate className="mt-5 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
             <input
               aria-label="Nombre"

@@ -1,9 +1,9 @@
 import { useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { QrCode, ShoppingBag } from 'lucide-react'
+import { Minus, Plus, QrCode, ShoppingBag } from 'lucide-react'
 import { formatoPrecio, nombrePresentacion } from '../data/menu'
 import { useApp } from '../store'
-import { QtyStepper } from './QtyStepper'
+import { BotonEscanearMesa } from './EscanerMesa'
 
 /**
  * Resumen del pedido. Se usa en la vista Pedido y en el panel que abre el botón
@@ -11,7 +11,7 @@ import { QtyStepper } from './QtyStepper'
  * para que el Cliente lo verifique (mitigación del riesgo "pedido en mesa incorrecta").
  */
 export function OrderSummary({ compact = false, enPanel = false }: { compact?: boolean; enPanel?: boolean }) {
-  const { mesa, carrito, total, totalItems, agregar, quitar, confirmarPedido } = useApp()
+  const { mesa, carrito, total, totalItems, agregar, quitar, anotar, confirmarPedido } = useApp()
   const navigate = useNavigate()
   const tituloId = useId() // puede haber dos a la vez: la vista Pedido y el panel
   const [enviando, setEnviando] = useState(false)
@@ -49,30 +49,62 @@ export function OrderSummary({ compact = false, enPanel = false }: { compact?: b
         </div>
       ) : (
         <>
-          <ul className="flex flex-col divide-y divide-line/60 rounded-2xl border border-line/60 bg-surface">
-            {carrito.map(({ producto, presentacion, cantidad }) => {
+          {/* Como el CartDrawer de GalateaLovable: foto, nombre completo (sin cortar) y una nota por línea */}
+          <ul className="flex flex-col gap-3">
+            {carrito.map(({ producto, presentacion, cantidad, nota }) => {
               const variante = nombrePresentacion(presentacion.nombre)
-              const nombre = variante ? `${producto.nombre} · ${variante}` : producto.nombre
+              const nombre = variante ? `${producto.nombre} ${variante}` : producto.nombre
               return (
-                <li key={presentacion.id} className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{nombre}</p>
-                    <p className="text-sm text-muted">{formatoPrecio(presentacion.precio * cantidad)}</p>
+                <li key={presentacion.id} className="rounded-2xl border border-line/60 bg-surface p-3">
+                  <div className="flex gap-3">
+                    {producto.foto ? (
+                      <img src={producto.foto} alt="" width={64} height={64} loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
+                    ) : (
+                      <div className="size-16 shrink-0 rounded-xl bg-elevated" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold leading-tight">{producto.nombre}</p>
+                      {variante && <p className="text-xs text-muted">{variante}</p>}
+                      <p className="mt-1 text-sm text-gold">{formatoPrecio(presentacion.precio * cantidad)}</p>
+                    </div>
+                    <div className="flex items-center gap-1 self-center">
+                      <button
+                        type="button"
+                        aria-label={`Quitar uno de ${nombre}`}
+                        onClick={() => quitar(presentacion.id)}
+                        className="grid size-8 place-items-center rounded-full bg-elevated transition-colors hover:bg-line"
+                      >
+                        <Minus size={16} aria-hidden="true" />
+                      </button>
+                      <span className="w-6 text-center font-bold" aria-live="polite">
+                        {cantidad}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`Sumar uno de ${nombre}`}
+                        onClick={() => agregar(presentacion.id)}
+                        className="grid size-8 place-items-center rounded-full bg-elevated transition-colors hover:bg-line"
+                      >
+                        <Plus size={16} aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
-                  <QtyStepper
-                    nombre={nombre}
-                    cantidad={cantidad}
-                    onMas={() => agregar(presentacion.id)}
-                    onMenos={() => quitar(presentacion.id)}
+                  <input
+                    value={nota}
+                    onChange={(e) => anotar(presentacion.id, e.target.value)}
+                    placeholder="Nota (ej. sin cebolla, punto jugoso)"
+                    aria-label={`Nota para ${nombre}`}
+                    maxLength={255}
+                    className="mt-2 w-full rounded-xl border border-line bg-bg px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus:border-gold"
                   />
                 </li>
               )
             })}
           </ul>
 
-          <div className="flex items-baseline justify-between border-t border-line/60 pt-3">
+          <div className="flex items-center justify-between text-lg">
             <span className="text-muted">Total</span>
-            <span className="font-heading text-2xl font-semibold text-ink">{formatoPrecio(total)}</span>
+            <span className="font-display text-2xl text-ink">{formatoPrecio(total)}</span>
           </div>
 
           {mesa ? (
@@ -83,8 +115,8 @@ export function OrderSummary({ compact = false, enPanel = false }: { compact?: b
                   Se enviará a la <strong className="font-semibold text-gold">mesa {mesa.numero}</strong>.
                 </span>
               </p>
-              <button type="button" className="btn-primary w-full" onClick={confirmar} disabled={enviando}>
-                {enviando ? 'Enviando…' : 'Confirmar pedido'}
+              <button type="button" className="btn-primary min-h-12 w-full text-base" onClick={confirmar} disabled={enviando}>
+                {enviando ? 'Enviando…' : 'Enviar pedido a la cocina'}
               </button>
               {error && (
                 <p role="alert" className="text-sm text-danger">
@@ -93,9 +125,10 @@ export function OrderSummary({ compact = false, enPanel = false }: { compact?: b
               )}
             </div>
           ) : (
-            <p className="rounded-xl border border-line/60 px-4 py-3 text-sm text-muted">
-              Para pedir desde la app escaneá el código QR de tu mesa. También podés pedirle al mozo.
-            </p>
+            <div className="flex flex-col gap-3 rounded-xl border border-line/60 px-4 py-3">
+              <p className="text-sm text-muted">Para pedir desde la app escaneá el código QR de tu mesa. También podés pedirle al mozo.</p>
+              <BotonEscanearMesa className="btn-primary min-h-12 w-full" />
+            </div>
           )}
         </>
       )}
